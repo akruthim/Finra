@@ -1,9 +1,3 @@
-test:
-  file:
-    persist:
-      location : /Users/akruthi/Desktop/finra/
-      fullpath : /Users/akruthi/Desktop/finra/test.txt
-
 file:
   persist:
-    location : /Users/sss765/Desktop/finra/
+    location : /Users/akruthi/Desktop/finra/
