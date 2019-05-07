@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -23,12 +22,6 @@ public class FileUploadHelperTest {
     @Autowired
     private FileMetadataRepository fileMetadataRepository;
 
-    @Value("${test.file.persist.location}")
-    private String filePersistLocation;
-
-    @Value("${test.file.persist.fullpath}")
-    private String testFilePersistFullPath;
-
     FileMetadataEntity testMetadataEntity = null;
     FileUploadHelper fileUploadHelper = null;
     MockMultipartFile mockMultipartFile = null;
@@ -38,10 +31,12 @@ public class FileUploadHelperTest {
     public void setUp() {
         //create a test metadata
         testMetadataEntity = new FileMetadataEntity("test-name", "test-dept", "test-type", "test-user");
+        //Create the test upload directory and that location is return so that i could be passed to next layer
+        String filePersistLocation = FileUploadTestUtil.createTestUploadDirectoryIfDoesntExists();
         //create the helper
         fileUploadHelper = new FileUploadHelper(fileMetadataRepository, filePersistLocation);
 
-        mockMultipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "This is a test content".getBytes());
+        mockMultipartFile = new MockMultipartFile("file", "test-upload.txt", "text/plain", "This is a test content".getBytes());
     }
 
     @Test
@@ -61,13 +56,13 @@ public class FileUploadHelperTest {
     @Test
     public void testStoreFileToFileSystem_Success() throws Exception {
         //clean up the existing test file before you test file creation
-        FileUploadTestUtil.deleteFile(testFilePersistFullPath);
+        FileUploadTestUtil.deleteTestFile();
 
         fileUploadHelper.storeFileToFileSystem(mockMultipartFile);
         //check whether file exists
-        assertTrue(FileUploadTestUtil.doesFileExists(testFilePersistFullPath));
+        assertTrue(FileUploadTestUtil.doesTestFileExists());
         //delete the just created test file
-        FileUploadTestUtil.deleteFile(testFilePersistFullPath);
+        FileUploadTestUtil.deleteTestFile();
 
     }
 
@@ -76,7 +71,7 @@ public class FileUploadHelperTest {
 
         fileUploadHelper.persistFileMetadataToDB(null);
         //file shouldn't exists
-        assertFalse(FileUploadTestUtil.doesFileExists(testFilePersistFullPath));
+        assertFalse(FileUploadTestUtil.doesTestFileExists());
     }
 
 }
