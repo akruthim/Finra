@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,12 +24,6 @@ public class FileMetadataServiceImplTest {
     @Autowired
     private FileMetadataRepository fileMetadataRepository;
 
-    @Value("${test.file.persist.location}")
-    private String filePersistLocation;
-
-    @Value("${test.file.persist.fullpath}")
-    private String testFilePersistFullPath;
-
     FileMetadata testMetadata = null;
     FileUploadHelper fileUploadHelper = null;
     MockMultipartFile mockMultipartFile = null;
@@ -40,10 +33,12 @@ public class FileMetadataServiceImplTest {
     public void setUp() {
         //create a test metadata
         testMetadata = new FileMetadata("test-name", "test-dept", "test-type", "test-user");
+        //Create the test upload directory and that location is return so that i could be passed to next layer
+        String filePersistLocation = FileUploadTestUtil.createTestUploadDirectoryIfDoesntExists();
         //create the helper
         fileUploadHelper = new FileUploadHelper(fileMetadataRepository, filePersistLocation);
 
-        mockMultipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "This is a test content".getBytes());
+        mockMultipartFile = new MockMultipartFile("file", "test-upload.txt", "text/plain", "This is a test content".getBytes());
         //create the service instance
         fileMetadataService = new FileMetadataServiceImpl(new FileMetadataToEntityConverter(), fileUploadHelper, fileMetadataRepository, new FileMetadataEntityToMetadataConverter());
     }
@@ -52,13 +47,13 @@ public class FileMetadataServiceImplTest {
     public void testProcessFileUpload_success() throws Exception {
         //clean up prev test file if any before creating one, precaution
         //calling the utility class i created to support my test
-        FileUploadTestUtil.deleteFile(testFilePersistFullPath);
+        FileUploadTestUtil.deleteTestFile();
         FileUploadResponse uploadResponse = fileMetadataService.processFileUpload(mockMultipartFile, testMetadata);
 
         assertNotNull(uploadResponse);
         assertNotNull(uploadResponse.getFileId());
         //flush after test
-        FileUploadTestUtil.deleteFile(testFilePersistFullPath);
+        FileUploadTestUtil.deleteTestFile();
     }
 
     @Test
