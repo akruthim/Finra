@@ -1,4 +1,4 @@
-#Finra-File-Upload
+##Finra-File-Upload
 
 ### Todo before execution
 * Change property `file.persist.location` in `src/main/java/resources/application.yml` to the directory of your choice. This is where the uploaded files gets persisted.<br/> 
